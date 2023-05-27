@@ -46,15 +46,17 @@
       <input type="file" name="image" id="image" class="form-control">
     </div>
     <button onclick="uploadImage()" class="btn btn-secondary">Upload n Compress</button>
-
+    <h4 class="text-center text-white mb-4" id="total-time"></h4>
     <div class="img-container gap-5">
       <div>
         <h2 class="text-white">Uploaded</h2>
         <img src=""  id="uploaded-image" alt="Uploaded image">
+        <span class="text-white bg-dark" id="uploaded-image-description"></span>
       </div>
       <div>
         <h2 class="text-white">Compressed</h2>
         <img src=""  id="compressed-image" alt="Compressed image">
+        <span class="text-white bg-dark" id="compressed-image-description"></span>
       </div>
     </div>
   </div>
@@ -75,6 +77,11 @@
     .then(data => {
       const uploadedImage = document.getElementById('uploaded-image');
       const compressedImage = document.getElementById('compressed-image');
+
+      document.getElementById('total-time').innerText = `${data.time} s`;
+      document.getElementById('uploaded-image-description').innerText = `${data.image_size} bytes`;
+      document.getElementById('compressed-image-description').innerText = `${data.compress_size} bytes`;
+
       uploadedImage.src = `data:image/jpeg;base64, ${data.image_data}`;
       compressedImage.src = `data:image/jpeg;base64, ${data.compress_data}`;
     })
