@@ -66,8 +66,8 @@ def home(request):
         return JsonResponse({
             "image_data": encoded_file, 
             "compress_data": compressed_file,
-            "image_size": len(encoded_file),
-            "compress_size": len(compressed_file),
+            # "image_size": len(encoded_file),
+            # "compress_size": len(compressed_file),
             "time": end - start
         })
         

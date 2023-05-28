@@ -32,8 +32,7 @@
         overflow: hidden;
       }
       body {
-        background-image: url('https://placekitten.com/g/1800/900');
-        background-size: cover;
+        background-color: rgba(160, 160, 160, 1);
       }
     </style>
   </head>
@@ -79,8 +78,8 @@
       const compressedImage = document.getElementById('compressed-image');
 
       document.getElementById('total-time').innerText = `${data.time} s`;
-      document.getElementById('uploaded-image-description').innerText = `${data.image_size} bytes`;
-      document.getElementById('compressed-image-description').innerText = `${data.compress_size} bytes`;
+      // document.getElementById('uploaded-image-description').innerText = `${data.image_size} bytes`;
+      // document.getElementById('compressed-image-description').innerText = `${data.compress_size} bytes`;
 
       uploadedImage.src = `data:image/jpeg;base64, ${data.image_data}`;
       compressedImage.src = `data:image/jpeg;base64, ${data.compress_data}`;
