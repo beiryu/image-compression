@@ -1,5 +1,5 @@
-from utils.file_writer import *
-from utils.huffman import HuffmanEncoder
+from upload_app.helpers.utils.file_writer import *
+from upload_app.helpers.utils.huffman import HuffmanEncoder
 
 
 def color_encoder(file_name, img, real_height, real_width, quality):

@@ -38,13 +38,15 @@
   </head>
 <body>
   <div class="container container--iamge">
-    <h1 class="text-center text-white mb-4">Group 5</h1>
+    <h1 class="text-center text-white mb-4">Image Compressor</h1>
 
     {% csrf_token %}
     <div class="mb-3">
       <input type="file" name="image" id="image" class="form-control">
     </div>
     <button onclick="uploadImage()" class="btn btn-secondary">Upload n Compress</button>
+    <a class="btn btn-success" download="" id="download-image" href="">Download</a>
+
     <h4 class="text-center text-white mb-4" id="total-time"></h4>
     <div class="img-container gap-5">
       <div>
@@ -59,8 +61,23 @@
       </div>
     </div>
   </div>
+
+
 </body>
 <script>
+
+  function randomFileName(length = 12) {
+      let result = '';
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      let counter = 0;
+      while (counter < length) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+      }
+      return result;
+  }
+
   function uploadImage() {
     const input = document.getElementById('image');
     const file = input.files[0];
@@ -74,15 +91,18 @@
     })
     .then(response => response.json())
     .then(data => {
+      const downloadImage = document.getElementById('download-image');
       const uploadedImage = document.getElementById('uploaded-image');
       const compressedImage = document.getElementById('compressed-image');
 
       document.getElementById('total-time').innerText = `${data.time} s`;
-      // document.getElementById('uploaded-image-description').innerText = `${data.image_size} bytes`;
-      // document.getElementById('compressed-image-description').innerText = `${data.compress_size} bytes`;
+      document.getElementById('uploaded-image-description').innerText = `${data.image_size} bytes`;
+      document.getElementById('compressed-image-description').innerText = `${data.compress_size} bytes`;
 
       uploadedImage.src = `data:image/jpeg;base64, ${data.image_data}`;
       compressedImage.src = `data:image/jpeg;base64, ${data.compress_data}`;
+      downloadImage.href = `data:image/jpeg;base64, ${data.compress_data}`; 
+      downloadImage.download = `${randomFileName()}.jpeg`; 
     })
     .catch(error => {
       console.error('Error:', error);

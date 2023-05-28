@@ -1,5 +1,5 @@
 import cv2
-from encoder.color_encoder import color_encoder
+from upload_app.helpers.encoder.color_encoder import color_encoder
 import numpy as np
 
 def fill(img, height, width, channel_num):
@@ -16,10 +16,6 @@ def fill(img, height, width, channel_num):
     return img_filled
 
 
-if __name__ == '__main__':
-    img = cv2.imread('test_img/in.pnm', cv2.IMREAD_COLOR)
-    height, width = img.shape[:2]
-    quality = 90
-
+def jpeg_encoder(image_out_dir, img, height, width, quality):
     img = fill(img, height, width, 3)
-    color_encoder('test_img/out.jpeg', img, height, width, quality)
+    color_encoder(image_out_dir, img, height, width, quality)
