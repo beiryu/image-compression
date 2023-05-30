@@ -1,5 +1,21 @@
-import cv2
 import numpy as np
+
+def BGRtoYCrCb(inputImage):
+  result = np.zeros(inputImage.shape)
+  result = result.astype(np.float64)
+
+  B = inputImage[:,:,0]
+  G = inputImage[:,:,1]
+  R = inputImage[:,:,2]
+
+  # Y
+  result[:,:,0] = 0.299 * R + 0.587 * G + 0.114 * B
+  # Cr
+  result[:,:,1] = (R - result[:,:,0]) * 0.713 + 128
+  # Cb
+  result[:,:,2] = (B - result[:,:,0]) * 0.564 + 128
+
+  return np.uint8(result)
 
 basic_quan_table_lum = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
                                  [12, 12, 14, 19, 26, 58, 60, 55],
@@ -32,83 +48,58 @@ def setup_quan_table(basic_quan_table, quality):
     quan_table = quan_table.astype(np.uint8)
     return quan_table
 
+DCT_matrix = np.array([[ 0.35355339,  0.35355339,  0.35355339,  0.35355339,  0.35355339,  0.35355339,
+   0.35355339,  0.35355339],
+ [ 0.49039264,  0.41573481,  0.27778512,  0.09754516, -0.09754516, -0.27778512,
+  -0.41573481, -0.49039264],
+ [ 0.46193977,  0.19134172, -0.19134172, -0.46193977, -0.46193977, -0.19134172,
+   0.19134172,  0.46193977],
+ [ 0.41573481, -0.09754516, -0.49039264, -0.27778512,  0.27778512,  0.49039264,
+   0.09754516, -0.41573481],
+ [ 0.35355339, -0.35355339, -0.35355339,  0.35355339,  0.35355339, -0.35355339,
+  -0.35355339,  0.35355339],
+ [ 0.27778512, -0.49039264,  0.09754516,  0.41573481, -0.41573481, -0.09754516,
+   0.49039264, -0.27778512],
+ [ 0.19134172, -0.46193977,  0.46193977, -0.19134172, -0.19134172,  0.46193977,
+  -0.46193977,  0.19134172],
+ [ 0.09754516, -0.27778512,  0.41573481, -0.49039264,  0.49039264, -0.41573481,
+   0.27778512, -0.09754516]], dtype = np.float64)
 
-def img_to_blocks(img, block_shape):
-    height, width = img.shape[:2]
-    block_height, block_width = block_shape
-    shape = (height // block_height, width // block_width, block_height, block_width)
-    strides = img.itemsize * np.array([width * block_height, block_width, width, 1])
-    img_blocks = np.lib.stride_tricks.as_strided(img, shape, strides).astype('float64')
-    img_blocks = np.reshape(img_blocks, (shape[0] * shape[1], block_height, block_width))
-    return img_blocks
+DCT_T_matrix = DCT_matrix.T
 
-
-def blocks_to_img(img_blocks, img_shape):
-    height, width = img_shape[:2]
-    block_height, block_width = img_blocks.shape[-2:]
-    shape = (height // block_height, width // block_width, block_height, block_width)
-    img_blocks = np.reshape(img_blocks, shape)
-
-    lines = []
-    for line in img_blocks:
-        lines.append(np.concatenate(line, axis=1))
-    img = np.concatenate(lines, axis=0)
-
-    return img
+def calc_dct(f):
+  return np.dot(np.dot(DCT_matrix, f), DCT_T_matrix)
 
 
-def block_preprocess(img_blocks, block_sum, quan_table):
-    last_dc = 0
-    dc_size_list = []
-    dc_vli_list = []
-    ac_first_byte_list = []
-    ac_huffman_list = []
-    ac_vli_list = []
-    for i in range(block_sum):
-        block = img_blocks[i] - 128
-        block_dct = cv2.dct(block)
-        block_dct_quantized = np.round(block_dct / quan_table).astype(np.int32)
-        block_dct_zig_zag = zig_zag(block_dct_quantized)
-        dc = block_dct_zig_zag[0]
-        ac = block_dct_zig_zag[1:]
-
-        dc_size, dc_vli = delta_encode(dc, last_dc)
-        ac_first_byte_block_list, ac_vli_block_list = run_length_encode(ac)
-
-        dc_size_list.append(dc_size)
-        dc_vli_list.append(dc_vli)
-        ac_first_byte_list.append(ac_first_byte_block_list)
-        ac_huffman_list += ac_first_byte_block_list
-        ac_vli_list.append(ac_vli_block_list)
-
-        last_dc = dc
-
-    return dc_size_list, dc_vli_list, ac_first_byte_list, ac_huffman_list, ac_vli_list
-
+zigzagOrder = np.array([0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,
+                           49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63])
 
 def zig_zag(matrix):
-    rows, columns = matrix.shape[:2]
+  matrix = matrix.flatten()
+  return matrix[zigzagOrder]
 
-    matrix_zig_zag = np.zeros(rows * columns, dtype=matrix.dtype)
-    solution = [[] for _ in range(rows + columns - 1)]
+def preprocess(img):
+  last_dc = 0
+  dc_size_list = []
+  dc_vli_list = []
+  ac_first_byte_list = []
+  ac_huffman_list = []
+  ac_vli_list = []
+  for j in range(0, img.shape[0], 8):
+    for k in range(0, img.shape[1], 8):
+      block_dct_zig_zag = zig_zag(img[j:j+8, k:k+8])
+      dc = block_dct_zig_zag[0]
+      ac = block_dct_zig_zag[1:]
+      dc_size, dc_vli = delta_encode(dc, last_dc)
+      ac_first_byte_block_list, ac_vli_block_list = run_length_encode(ac)
+      dc_size_list.append(dc_size)
+      dc_vli_list.append(dc_vli)
+      ac_first_byte_list.append(ac_first_byte_block_list)
+      ac_huffman_list += ac_first_byte_block_list
+      ac_vli_list.append(ac_vli_block_list)
+      last_dc = dc
 
-    for i in range(rows):
-        for j in range(columns):
-            sum = i + j
-
-            if sum % 2 == 0:
-                solution[sum].insert(0, matrix[i][j])
-            else:
-                solution[sum].append(matrix[i][j])
-
-    count = 0
-    for i in solution:
-        for j in i:
-            matrix_zig_zag[count] = j
-            count += 1
-
-    return matrix_zig_zag
-
+  return dc_size_list, dc_vli_list, ac_first_byte_list, ac_huffman_list, ac_vli_list
 
 def run_length_encode(array):
     last_nonzero_index = 0

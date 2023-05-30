@@ -1,17 +1,18 @@
-import cv2
 from upload_app.helpers.encoder.color_encoder import color_encoder
 import numpy as np
 
 def fill(img, height, width, channel_num):
     img_filled = img.copy()
+    height_pad = 0
 
     if height % 8 != 0:
-        filler = np.ones((8 - (height % 8), width, channel_num), dtype=np.uint8) * 128
-        img_filled = np.concatenate([img, filler], axis=0)
+        height_pad = 8 - (height % 8)
+        filler = np.ones((height_pad, width, channel_num), dtype=np.uint8) * 128
+        img_filled = np.concatenate([img, filler], axis = 0)
 
     if width % 8 != 0:
-        filler = np.ones((height + 8 - (height % 8), 8 - (width % 8), channel_num), dtype=np.uint8) * 128
-        img_filled = np.concatenate([img_filled, filler], axis=1)
+        filler = np.ones((height + height_pad, 8 - (width % 8), channel_num), dtype=np.uint8) * 128
+        img_filled = np.concatenate([img_filled, filler], axis = 1)
 
     return img_filled
 
