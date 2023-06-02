@@ -92,5 +92,6 @@ khai phiên bản tuần tự của thuật toán nén ảnh JPEG, song song hó
 thể có trong thuật toán, đầu ra là ảnh có chất lượng không kém hơn nhiều so với ảnh
 gốc và kích thước ảnh giảm.
 
-[Link colab]
-https://colab.research.google.com/drive/1hASbTgy0KDWVjUZCzC_-opx6PiAa4Zg3?usp=sharing
+[Link colab](https://colab.research.google.com/drive/1hASbTgy0KDWVjUZCzC_-opx6PiAa4Zg3?usp=sharing)
+[Link Application](https://nguyenkhanh.pythonanywhere.com/)
+

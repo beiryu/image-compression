@@ -1,2 +1,8 @@
 Google Colab:
 https://colab.research.google.com/drive/1hASbTgy0KDWVjUZCzC_-opx6PiAa4Zg3?usp=sharing
+
+Application:
+https://nguyenkhanh.pythonanywhere.com/
+
+Github:
+https://github.com/beiryu/image-compression
